@@ -39,6 +39,14 @@
         align-items: center;
         min-height: 100vh;
       }
+      .container {
+        display: flex;
+        flex-direction: row; /* PC 환경에서는 가로로 정렬 */
+        align-items: flex-start;
+        justify-content: center;
+        width: 100%;
+        max-width: 1200px;
+      }
       .game-container,
       .intro-container {
         background-color: #ffffff;
@@ -103,6 +111,14 @@
         height: auto;
         margin: 20px 0;
       }
+      .chiko-container {
+        margin-right: 20px;
+      }
+      .chiko-image {
+        width: 150px;
+        height: auto;
+        margin-bottom: 20px;
+      }
       /* 프로그래스 바 스타일 */
       .progress-container {
         width: 100%;
@@ -159,10 +175,17 @@
         margin-right: auto;
       }
       @media (max-width: 480px) {
+        .container {
+          flex-direction: column; /* 모바일 환경에서는 세로로 정렬 */
+          align-items: center;
+        }
         .game-container,
         .intro-container {
           width: 90%;
           padding: 15px;
+        }
+        .chiko-container {
+          margin-bottom: 20px;
         }
         .btn {
           font-size: 16px;
@@ -177,7 +200,7 @@
       }
     </style>
   </head>
-  <body>
+  <body oncontextmenu="return false;">
     <!-- 인트로 스토리 컨테이너 -->
     <div class="intro-container" id="intro">
       <h1>Chiko Branch Quest</h1>
@@ -192,42 +215,52 @@
       <button class="btn btn-level-up" onclick="startGame()">모험 시작</button>
     </div>
 
-    <!-- 게임 컨테이너 -->
-    <div class="game-container" id="game">
-      <h1>Chiko Branch Quest</h1>
-      <img
-        src="src/branch001.png"
-        alt="Branch Image"
-        class="branch-image"
-        id="branch-image"
-      />
-      <div class="strength-level">
-        현재 강화 레벨: <span id="level">1</span>
+    <!-- 게임 컨테이너와 치코 이미지 컨테이너 -->
+    <div class="container">
+      <div class="chiko-container" id="chiko-container">
+        <img
+          src="src/chiko_success.png"
+          alt="Chiko Image"
+          class="chiko-image"
+          id="chiko-image"
+        />
       </div>
-      <div class="branch-name">
-        나뭇가지 이름: <span id="branch-name">기본 나뭇가지</span>
+      <div class="game-container" id="game">
+        <h1>Chiko Branch Quest</h1>
+        <img
+          src="src/branch001.png"
+          alt="Branch Image"
+          class="branch-image"
+          id="branch-image"
+        />
+        <div class="strength-level">
+          현재 강화 레벨: <span id="level">1</span>
+        </div>
+        <div class="branch-name">
+          나뭇가지 이름: <span id="branch-name">기본 나뭇가지</span>
+        </div>
+        <div class="cost">총 강화 비용: <span id="cost">0</span></div>
+        <div class="progress-container">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <button
+          class="btn btn-level-up"
+          id="btn-level-up"
+          onclick="levelUp()"
+          disabled
+        >
+          1레벨 강화
+        </button>
+        <button
+          class="btn btn-level-up-10"
+          id="btn-level-up-10"
+          onclick="levelUp10()"
+          disabled
+        >
+          10레벨 강화
+        </button>
+        <div class="result" id="result"></div>
       </div>
-      <div class="cost">총 강화 비용: <span id="cost">0</span></div>
-      <div class="progress-container">
-        <div class="progress-bar" id="progress-bar"></div>
-      </div>
-      <button
-        class="btn btn-level-up"
-        id="btn-level-up"
-        onclick="levelUp()"
-        disabled
-      >
-        1레벨 강화
-      </button>
-      <button
-        class="btn btn-level-up-10"
-        id="btn-level-up-10"
-        onclick="levelUp10()"
-        disabled
-      >
-        10레벨 강화
-      </button>
-      <div class="result" id="result"></div>
     </div>
 
     <!-- 모달 -->
@@ -247,6 +280,7 @@
       let currentLevel = 1;
       let totalCost = 0;
       let gameCompleted = false;
+      let isEnhancing = false; // 강화 진행 중 여부를 나타내는 플래그
 
       function startGame() {
         document.getElementById("intro").style.display = "none";
@@ -300,12 +334,22 @@
         return level * 100; // 레벨마다 100씩 증가
       }
 
+      function updateChikoImage(result) {
+        const chikoImage = document.getElementById("chiko-image");
+        if (result === "win") {
+          chikoImage.src = "src/chiko_win.png";
+        } else if (result === "success") {
+          chikoImage.src = "src/chiko_success.png";
+        } else if (result === "cry") {
+          chikoImage.src = "src/chiko_cry.png";
+        } else if (result === "fail") {
+          chikoImage.src = "src/chiko_fail.png";
+        }
+      }
+
       function levelUp() {
-        if (gameCompleted) {
-          showModal(
-            "축하합니다! 세계수의 가지를 완성했습니다!",
-            getBranchImage(currentLevel)
-          );
+        if (gameCompleted || isEnhancing) {
+          // 강화 중이거나 게임이 완료된 경우
           return;
         }
 
@@ -315,6 +359,7 @@
             "축하합니다! 세계수의 가지를 완성했습니다!",
             getBranchImage(currentLevel)
           );
+          updateChikoImage("win");
           return;
         }
 
@@ -325,6 +370,7 @@
         document.getElementById("cost").textContent = totalCost;
 
         // 강화 중에 버튼을 비활성화하여 중복 실행 방지
+        isEnhancing = true;
         document.getElementById("btn-level-up").disabled = true;
         document.getElementById("btn-level-up-10").disabled = true;
 
@@ -333,10 +379,12 @@
           if (random < successRate) {
             currentLevel += 1;
             updateResultMessage(getBranchName(currentLevel) + " 강화 성공!");
+            updateChikoImage("success");
           } else {
             if (currentLevel >= 60 && currentLevel < 70) {
               currentLevel -= 1;
               updateResultMessage("강화 실패! 레벨이 하락했습니다.");
+              updateChikoImage("cry");
             } else if (
               currentLevel >= 70 &&
               currentLevel < 90 &&
@@ -347,24 +395,24 @@
                 "src/brokenbranch.png"
               );
               currentLevel = 1;
+              updateChikoImage("fail");
             } else {
               updateResultMessage("강화 실패!");
+              updateChikoImage("cry");
             }
           }
 
           updateLevel();
           // 강화 후 버튼 다시 활성화
+          isEnhancing = false;
           document.getElementById("btn-level-up").disabled = false;
           document.getElementById("btn-level-up-10").disabled = false;
         });
       }
 
       function levelUp10() {
-        if (gameCompleted) {
-          showModal(
-            "게임이 완료되었습니다! 더 이상 강화를 진행할 수 없습니다.",
-            getBranchImage(currentLevel)
-          );
+        if (gameCompleted || isEnhancing) {
+          // 강화 중이거나 게임이 완료된 경우
           return;
         }
 
@@ -377,15 +425,17 @@
         }
 
         // 강화 중에 버튼을 비활성화하여 중복 실행 방지
+        isEnhancing = true;
         document.getElementById("btn-level-up").disabled = true;
         document.getElementById("btn-level-up-10").disabled = true;
 
         startProgressBar(() => {
           for (let i = 0; i < 10; i++) {
-            levelUp();
             if (gameCompleted || currentLevel >= 90) break;
+            levelUp();
           }
           // 강화 후 버튼 다시 활성화
+          isEnhancing = false;
           document.getElementById("btn-level-up").disabled = false;
           document.getElementById("btn-level-up-10").disabled = false;
         });

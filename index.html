@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chiko Branch Quest</title>
+    <style>
+      body {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        background-color: #a8e6cf;
+        color: #004d40;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+      .game-container,
+      .intro-container {
+        background-color: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        max-width: 90%;
+        width: 350px;
+        margin: 20px;
+        transition: all 0.3s ease;
+      }
+      .game-container h1,
+      .intro-container h1 {
+        color: #004d40;
+        font-size: 28px;
+        margin-bottom: 20px;
+      }
+      .strength-level,
+      .cost,
+      .result,
+      .branch-name {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 15px;
+      }
+      .btn {
+        padding: 15px 20px;
+        font-size: 18px;
+        margin: 10px 0;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        color: #ffffff;
+        width: 100%;
+        max-width: 300px;
+        transition: background-color 0.3s ease;
+      }
+      .btn-level-up:disabled,
+      .btn-level-up-10:disabled {
+        background-color: #b0bec5; /* 비활성화된 버튼 색상 */
+        cursor: not-allowed;
+      }
+      .btn-level-up {
+        background-color: #004d40;
+      }
+      .btn-level-up:hover:enabled {
+        background-color: #00695c;
+      }
+      .btn-level-up-10 {
+        background-color: #c2185b;
+      }
+      .btn-level-up-10:hover:enabled {
+        background-color: #ad1457;
+      }
+      .result {
+        font-size: 18px;
+        margin-top: 20px;
+        color: #004d40;
+      }
+      img.branch-image {
+        width: 200px;
+        height: auto;
+        margin: 20px 0;
+      }
+      /* 모달 스타일 */
+      .modal {
+        display: none; /* 초기에는 숨김 */
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .modal-content img {
+        width: 150px;
+        height: auto;
+        margin-bottom: 20px;
+      }
+      .close-btn {
+        padding: 10px 20px;
+        background-color: #004d40;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      @media (max-width: 480px) {
+        .game-container,
+        .intro-container {
+          width: 90%;
+          padding: 15px;
+        }
+        .btn {
+          font-size: 16px;
+          padding: 10px 15px;
+        }
+        .strength-level,
+        .cost,
+        .result,
+        .branch-name {
+          font-size: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 인트로 스토리 컨테이너 -->
+    <div class="intro-container" id="intro">
+      <h1>Chiko Branch Quest</h1>
+      <p>
+        용사 리코와 함께 모험을 떠난 햄스터 치코. 어느 날 마물과 싸우던 중
+        치코의 소중한 나뭇가지가 부러지고 말았습니다.
+      </p>
+      <p>
+        마을에 들러 나뭇가지를 고치던 중, 전설의 세계수 가지에 대한 이야기를
+        듣게 된 치코는 그 가지를 손에 넣기 위해 모험을 떠나기로 결심합니다!
+      </p>
+      <button class="btn btn-level-up" onclick="startGame()">모험 시작</button>
+    </div>
+
+    <!-- 게임 컨테이너 -->
+    <div class="game-container" id="game">
+      <h1>Chiko Branch Quest</h1>
+      <img
+        src="src/branch001.png"
+        alt="Branch Image"
+        class="branch-image"
+        id="branch-image"
+      />
+      <div class="strength-level">
+        현재 강화 레벨: <span id="level">1</span>
+      </div>
+      <div class="branch-name">
+        나뭇가지 이름: <span id="branch-name">기본 나뭇가지</span>
+      </div>
+      <div class="cost">총 강화 비용: <span id="cost">0</span></div>
+      <button
+        class="btn btn-level-up"
+        id="btn-level-up"
+        onclick="levelUp()"
+        disabled
+      >
+        1레벨 강화
+      </button>
+      <button
+        class="btn btn-level-up-10"
+        id="btn-level-up-10"
+        onclick="levelUp10()"
+        disabled
+      >
+        10레벨 강화
+      </button>
+      <div class="result" id="result"></div>
+    </div>
+
+    <!-- 모달 -->
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <img
+          src="src/branch001.png"
+          alt="Branch Image"
+          id="modal-branch-image"
+        />
+        <p id="modal-text"></p>
+        <button class="close-btn" onclick="closeModal()">확인</button>
+      </div>
+    </div>
+
+    <script>
+      let currentLevel = 1;
+      let totalCost = 0;
+      let gameCompleted = false;
+
+      function startGame() {
+        document.getElementById("intro").style.display = "none";
+        document.getElementById("game").style.display = "block";
+        document.getElementById("btn-level-up").disabled = false; // 강화 버튼 활성화
+        document.getElementById("btn-level-up-10").disabled = false; // 10레벨 강화 버튼 활성화
+      }
+
+      function getBranchName(level) {
+        if (level >= 99) return "세계수의 가지";
+        if (level >= 90) return "신성한 홀";
+        if (level >= 80) return "장로의 완드";
+        if (level >= 70) return "고대의 완드";
+        if (level >= 60) return "비전의 지팡이";
+        if (level >= 50) return "마법의 지팡이";
+        if (level >= 40) return "신비한 막대";
+        if (level >= 30) return "마법의 가지";
+        if (level >= 20) return "강화된 가지";
+        if (level >= 10) return "튼튼한 나뭇가지";
+        return "기본 나뭇가지";
+      }
+
+      function getBranchImage(level) {
+        if (level >= 99) return "src/branch011.png";
+        if (level >= 90) return "src/branch010.png";
+        if (level >= 80) return "src/branch009.png";
+        if (level >= 70) return "src/branch008.png";
+        if (level >= 60) return "src/branch007.png";
+        if (level >= 50) return "src/branch006.png";
+        if (level >= 40) return "src/branch005.png";
+        if (level >= 30) return "src/branch004.png";
+        if (level >= 20) return "src/branch003.png";
+        if (level >= 10) return "src/branch002.png";
+        return "src/branch001.png";
+      }
+
+      function getSuccessRate() {
+        if (currentLevel < 30) return 0.8; // 80% 성공 확률
+        if (currentLevel < 60) return 0.7; // 70% 성공 확률
+        if (currentLevel < 70) return 0.5; // 50% 성공 확률
+        if (currentLevel < 90) return 0.3; // 30% 성공 확률
+        return 0.1; // 10% 성공 확률
+      }
+
+      function getBreakChance() {
+        if (currentLevel >= 70 && currentLevel < 90) return 0.05; // 5% 파손 확률
+        return 0;
+      }
+
+      function calculateCost(level) {
+        return level * 100; // 레벨마다 100씩 증가
+      }
+
+      function levelUp() {
+        if (gameCompleted) {
+          showModal(
+            "축하합니다! 세계수의 가지를 완성했습니다!",
+            getBranchImage(currentLevel)
+          );
+          return;
+        }
+
+        if (currentLevel >= 99) {
+          gameCompleted = true;
+          showModal(
+            "축하합니다! 세계수의 가지를 완성했습니다!",
+            getBranchImage(currentLevel)
+          );
+          return;
+        }
+
+        let successRate = getSuccessRate();
+        let breakChance = getBreakChance();
+        let cost = calculateCost(currentLevel);
+        totalCost += cost;
+        document.getElementById("cost").textContent = totalCost;
+
+        let random = Math.random();
+        if (random < successRate) {
+          currentLevel += 1;
+        } else {
+          if (currentLevel >= 60 && currentLevel < 70) {
+            currentLevel -= 1;
+          } else if (
+            currentLevel >= 70 &&
+            currentLevel < 90 &&
+            random < breakChance
+          ) {
+            showModal(
+              "강화 실패! 나뭇가지가 파손되었습니다.",
+              "src/brokenbranch.png"
+            );
+            currentLevel = 1;
+          }
+        }
+
+        updateLevel();
+      }
+
+      function levelUp10() {
+        if (gameCompleted) {
+          showModal(
+            "게임이 완료되었습니다! 더 이상 강화를 진행할 수 없습니다.",
+            getBranchImage(currentLevel)
+          );
+          return;
+        }
+
+        if (currentLevel >= 90) {
+          showModal(
+            "90강 이후에는 10레벨씩 강화할 수 없습니다.",
+            getBranchImage(currentLevel)
+          );
+          return;
+        }
+
+        for (let i = 0; i < 10; i++) {
+          levelUp();
+          if (gameCompleted || currentLevel >= 90) break;
+        }
+      }
+
+      function updateLevel() {
+        document.getElementById("level").textContent = currentLevel;
+        document.getElementById("branch-name").textContent =
+          getBranchName(currentLevel);
+        document.getElementById("branch-image").src =
+          getBranchImage(currentLevel);
+        document.getElementById("result").textContent =
+          getBranchName(currentLevel) + " 단계에 도달했습니다.";
+
+        if (currentLevel >= 99) {
+          document.getElementById("result").textContent =
+            "축하합니다! 세계수의 가지를 완성했습니다!";
+          gameCompleted = true;
+        }
+      }
+
+      function showModal(message, imageSrc) {
+        document.getElementById("modal-text").textContent = message;
+        document.getElementById("modal-branch-image").src = imageSrc;
+        document.getElementById("myModal").style.display = "flex";
+      }
+
+      function closeModal() {
+        document.getElementById("myModal").style.display = "none";
+      }
+
+      updateLevel();
+    </script>
+  </body>
+</html>

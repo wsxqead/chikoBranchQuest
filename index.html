@@ -185,6 +185,7 @@
         width: 90%;
         margin-left: auto;
         margin-right: auto;
+        visibility: hidden; /* 타자 효과 적용을 위해 초기에는 숨김 */
       }
       @media (max-width: 480px) {
         .container {
@@ -217,14 +218,8 @@
     <div class="intro-container" id="intro">
       <h1>Chiko Branch Quest</h1>
       <img src="src/ready.png" alt="Ready Image" class="intro-image" />
-      <p>
-        용사 리코와 함께 모험을 떠난 햄스터 치코. 어느 날 마물과 싸우던 중
-        치코의 소중한 나뭇가지가 부러지고 말았습니다.
-      </p>
-      <p>
-        마을에 들러 나뭇가지를 고치던 중, 전설의 세계수 가지에 대한 이야기를
-        듣게 된 치코는 그 가지를 손에 넣기 위해 모험을 떠나기로 결심합니다!
-      </p>
+      <p id="intro-text-1"></p>
+      <p id="intro-text-2"></p>
       <button class="btn btn-level-up" onclick="startGame()">모험 시작</button>
     </div>
 
@@ -568,6 +563,37 @@
           }
         }, 100); // 진행 속도 조절 (여기서는 100ms마다 증가)
       }
+
+      function typeWriterEffect(text, elementId, delay = 100) {
+        let i = 0;
+        const element = document.getElementById(elementId);
+        element.style.visibility = "visible"; // 요소를 보이게 함
+
+        function typeWriter() {
+          if (i < text.length) {
+            element.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(typeWriter, delay);
+          }
+        }
+
+        typeWriter();
+      }
+
+      window.onload = function () {
+        // 인트로 텍스트에 타자 효과 적용
+        typeWriterEffect(
+          "용사 리코와 함께 모험을 떠난 치코. 어느 날 마물과 싸우던 중 치코의 소중한 나뭇가지가 부러지고 말았습니다.",
+          "intro-text-1"
+        );
+
+        setTimeout(() => {
+          typeWriterEffect(
+            "마을에 들러 나뭇가지를 고치던 중, 전설의 세계수 가지에 대한 이야기를 듣게 된 치코는 그 가지를 손에 넣기 위해 모험을 하기로 결심합니다!",
+            "intro-text-2"
+          );
+        }, 4000); // 첫 번째 텍스트 효과가 끝난 후 두 번째 텍스트 효과 시작
+      };
 
       updateLevel();
     </script>

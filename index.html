@@ -103,6 +103,21 @@
         height: auto;
         margin: 20px 0;
       }
+      /* 프로그래스 바 스타일 */
+      .progress-container {
+        width: 100%;
+        background-color: #ccc;
+        border-radius: 20px;
+        margin: 15px auto;
+        height: 20px;
+        max-width: 300px;
+      }
+      .progress-bar {
+        width: 0;
+        height: 100%;
+        background-color: #004d40;
+        border-radius: 20px;
+      }
       /* 모달 스타일 */
       .modal {
         display: none; /* 초기에는 숨김 */
@@ -186,6 +201,9 @@
         나뭇가지 이름: <span id="branch-name">기본 나뭇가지</span>
       </div>
       <div class="cost">총 강화 비용: <span id="cost">0</span></div>
+      <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
       <button
         class="btn btn-level-up"
         id="btn-level-up"
@@ -299,30 +317,39 @@
         totalCost += cost;
         document.getElementById("cost").textContent = totalCost;
 
-        let random = Math.random();
-        if (random < successRate) {
-          currentLevel += 1;
-          updateResultMessage(getBranchName(currentLevel) + " 강화 성공!");
-        } else {
-          if (currentLevel >= 60 && currentLevel < 70) {
-            currentLevel -= 1;
-            updateResultMessage("강화 실패! 레벨이 하락했습니다.");
-          } else if (
-            currentLevel >= 70 &&
-            currentLevel < 90 &&
-            random < breakChance
-          ) {
-            showModal(
-              "강화 실패! 나뭇가지가 파손되었습니다.",
-              "src/brokenbranch.png"
-            );
-            currentLevel = 1;
-          } else {
-            updateResultMessage("강화 실패!");
-          }
-        }
+        // 강화 중에 버튼을 비활성화하여 중복 실행 방지
+        document.getElementById("btn-level-up").disabled = true;
+        document.getElementById("btn-level-up-10").disabled = true;
 
-        updateLevel();
+        startProgressBar(() => {
+          let random = Math.random();
+          if (random < successRate) {
+            currentLevel += 1;
+            updateResultMessage(getBranchName(currentLevel) + " 강화 성공!");
+          } else {
+            if (currentLevel >= 60 && currentLevel < 70) {
+              currentLevel -= 1;
+              updateResultMessage("강화 실패! 레벨이 하락했습니다.");
+            } else if (
+              currentLevel >= 70 &&
+              currentLevel < 90 &&
+              random < breakChance
+            ) {
+              showModal(
+                "강화 실패! 나뭇가지가 파손되었습니다.",
+                "src/brokenbranch.png"
+              );
+              currentLevel = 1;
+            } else {
+              updateResultMessage("강화 실패!");
+            }
+          }
+
+          updateLevel();
+          // 강화 후 버튼 다시 활성화
+          document.getElementById("btn-level-up").disabled = false;
+          document.getElementById("btn-level-up-10").disabled = false;
+        });
       }
 
       function levelUp10() {
@@ -342,10 +369,19 @@
           return;
         }
 
-        for (let i = 0; i < 10; i++) {
-          levelUp();
-          if (gameCompleted || currentLevel >= 90) break;
-        }
+        // 강화 중에 버튼을 비활성화하여 중복 실행 방지
+        document.getElementById("btn-level-up").disabled = true;
+        document.getElementById("btn-level-up-10").disabled = true;
+
+        startProgressBar(() => {
+          for (let i = 0; i < 10; i++) {
+            levelUp();
+            if (gameCompleted || currentLevel >= 90) break;
+          }
+          // 강화 후 버튼 다시 활성화
+          document.getElementById("btn-level-up").disabled = false;
+          document.getElementById("btn-level-up-10").disabled = false;
+        });
       }
 
       function updateLevel() {
@@ -373,6 +409,21 @@
 
       function closeModal() {
         document.getElementById("myModal").style.display = "none";
+      }
+
+      function startProgressBar(callback) {
+        const progressBar = document.getElementById("progress-bar");
+        let width = 0;
+        progressBar.style.width = width + "%";
+        const interval = setInterval(() => {
+          if (width >= 100) {
+            clearInterval(interval);
+            callback();
+          } else {
+            width += 10; // 진행 속도 조절
+            progressBar.style.width = width + "%";
+          }
+        }, 100); // 진행 속도 조절 (여기서는 100ms마다 증가)
       }
 
       updateLevel();

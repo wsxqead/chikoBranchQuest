@@ -54,7 +54,7 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         padding: 20px;
         max-width: 90%;
-        width: 350px;
+        width: 400px;
         margin: 20px;
         transition: all 0.3s ease;
       }
@@ -112,7 +112,7 @@
         margin: 20px 0;
       }
       .chiko-container {
-        margin-right: 20px;
+        display: contents;
       }
       .chiko-image {
         width: 150px;
@@ -217,16 +217,16 @@
 
     <!-- 게임 컨테이너와 치코 이미지 컨테이너 -->
     <div class="container">
-      <div class="chiko-container" id="chiko-container">
-        <img
-          src="src/chiko_success.png"
-          alt="Chiko Image"
-          class="chiko-image"
-          id="chiko-image"
-        />
-      </div>
       <div class="game-container" id="game">
         <h1>Chiko Branch Quest</h1>
+        <div class="chiko-container" id="chiko-container">
+          <img
+            src="src/chiko_success.png"
+            alt="Chiko Image"
+            class="chiko-image"
+            id="chiko-image"
+          />
+        </div>
         <img
           src="src/branch001.png"
           alt="Branch Image"

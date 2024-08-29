@@ -40,7 +40,7 @@
         min-height: 100vh;
       }
       .container {
-        display: flex;
+        display: none; /* 처음에는 숨김 */
         flex-direction: row; /* PC 환경에서는 가로로 정렬 */
         align-items: flex-start;
         justify-content: center;
@@ -101,6 +101,13 @@
       .btn-level-up-10:hover:enabled {
         background-color: #ad1457;
       }
+      .btn-restart {
+        background-color: #0288d1;
+        display: none; /* 처음에는 숨김 */
+      }
+      .btn-restart:hover {
+        background-color: #0277bd;
+      }
       .result {
         font-size: 18px;
         margin-top: 20px;
@@ -116,6 +123,11 @@
       }
       .chiko-image {
         width: 150px;
+        height: auto;
+        margin-bottom: 20px;
+      }
+      .intro-image {
+        width: 200px;
         height: auto;
         margin-bottom: 20px;
       }
@@ -204,6 +216,7 @@
     <!-- 인트로 스토리 컨테이너 -->
     <div class="intro-container" id="intro">
       <h1>Chiko Branch Quest</h1>
+      <img src="src/ready.png" alt="Ready Image" class="intro-image" />
       <p>
         용사 리코와 함께 모험을 떠난 햄스터 치코. 어느 날 마물과 싸우던 중
         치코의 소중한 나뭇가지가 부러지고 말았습니다.
@@ -216,7 +229,7 @@
     </div>
 
     <!-- 게임 컨테이너와 치코 이미지 컨테이너 -->
-    <div class="container">
+    <div class="container" id="game-container">
       <div class="game-container" id="game">
         <h1>Chiko Branch Quest</h1>
         <div class="chiko-container" id="chiko-container">
@@ -249,7 +262,7 @@
           onclick="levelUp()"
           disabled
         >
-          1레벨 강화
+          1회 강화
         </button>
         <button
           class="btn btn-level-up-10"
@@ -257,7 +270,14 @@
           onclick="levelUp10()"
           disabled
         >
-          10레벨 강화
+          10회 강화
+        </button>
+        <button
+          class="btn btn-restart"
+          id="btn-restart"
+          onclick="restartGame()"
+        >
+          재시작
         </button>
         <div class="result" id="result"></div>
       </div>
@@ -284,9 +304,24 @@
 
       function startGame() {
         document.getElementById("intro").style.display = "none";
-        document.getElementById("game").style.display = "block";
+        document.getElementById("game-container").style.display = "flex";
         document.getElementById("btn-level-up").disabled = false; // 강화 버튼 활성화
         document.getElementById("btn-level-up-10").disabled = false; // 10레벨 강화 버튼 활성화
+      }
+
+      function restartGame() {
+        currentLevel = 1;
+        totalCost = 0;
+        gameCompleted = false;
+        isEnhancing = false;
+        document.getElementById("level").textContent = currentLevel;
+        document.getElementById("cost").textContent =
+          totalCost.toLocaleString(); // 콤마 추가
+        document.getElementById("btn-level-up").style.display = "inline-block";
+        document.getElementById("btn-level-up-10").style.display =
+          "inline-block";
+        document.getElementById("btn-restart").style.display = "none";
+        updateLevel();
       }
 
       function getBranchName(level) {
@@ -360,6 +395,9 @@
             getBranchImage(currentLevel)
           );
           updateChikoImage("win");
+          document.getElementById("btn-level-up").style.display = "none";
+          document.getElementById("btn-level-up-10").style.display = "none";
+          document.getElementById("btn-restart").style.display = "inline-block";
           return;
         }
 
@@ -367,7 +405,8 @@
         let breakChance = getBreakChance();
         let cost = calculateCost(currentLevel);
         totalCost += cost;
-        document.getElementById("cost").textContent = totalCost;
+        document.getElementById("cost").textContent =
+          totalCost.toLocaleString(); // 콤마 추가
 
         // 강화 중에 버튼을 비활성화하여 중복 실행 방지
         isEnhancing = true;
@@ -429,15 +468,62 @@
         document.getElementById("btn-level-up").disabled = true;
         document.getElementById("btn-level-up-10").disabled = true;
 
-        startProgressBar(() => {
-          for (let i = 0; i < 10; i++) {
-            if (gameCompleted || currentLevel >= 90) break;
-            levelUp();
-          }
+        // 비동기 강화 함수 실행
+        performMultipleLevelUps(10).then(() => {
           // 강화 후 버튼 다시 활성화
           isEnhancing = false;
           document.getElementById("btn-level-up").disabled = false;
           document.getElementById("btn-level-up-10").disabled = false;
+        });
+      }
+
+      async function performMultipleLevelUps(times) {
+        for (let i = 0; i < times; i++) {
+          if (gameCompleted || currentLevel >= 90) break;
+          await performLevelUp(); // 각 강화가 완료될 때까지 기다림
+        }
+      }
+
+      function performLevelUp() {
+        return new Promise((resolve) => {
+          startProgressBar(() => {
+            let successRate = getSuccessRate();
+            let breakChance = getBreakChance();
+            let cost = calculateCost(currentLevel);
+            totalCost += cost;
+            document.getElementById("cost").textContent =
+              totalCost.toLocaleString(); // 콤마 추가
+
+            let random = Math.random();
+            if (random < successRate) {
+              currentLevel += 1;
+              updateResultMessage(getBranchName(currentLevel) + " 강화 성공!");
+              updateChikoImage("success");
+            } else {
+              if (currentLevel >= 60 && currentLevel < 70) {
+                currentLevel -= 1;
+                updateResultMessage("강화 실패! 레벨이 하락했습니다.");
+                updateChikoImage("cry");
+              } else if (
+                currentLevel >= 70 &&
+                currentLevel < 90 &&
+                random < breakChance
+              ) {
+                showModal(
+                  "강화 실패! 나뭇가지가 파손되었습니다.",
+                  "src/brokenbranch.png"
+                );
+                currentLevel = 1;
+                updateChikoImage("fail");
+              } else {
+                updateResultMessage("강화 실패!");
+                updateChikoImage("cry");
+              }
+            }
+
+            updateLevel();
+            resolve(); // 강화가 끝나면 Promise를 해결하여 다음 단계로 넘어감
+          });
         });
       }
 

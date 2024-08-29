@@ -1,8 +1,29 @@
 <!DOCTYPE html>
 <html lang="ko">
   <head>
-    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="icons/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="icons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="icons/favicon-16x16.png"
+    />
+    <link rel="manifest" href="icons/site.webmanifest" />
+    <link rel="mask-icon" href="icons/safari-pinned-tab.svg" color="#5bbad5" />
+    <meta name="msapplication-TileColor" content="#da532c" />
+    <meta name="theme-color" content="#ffffff" />
     <title>Chiko Branch Quest</title>
     <style>
       body {
@@ -281,9 +302,11 @@
         let random = Math.random();
         if (random < successRate) {
           currentLevel += 1;
+          updateResultMessage(getBranchName(currentLevel) + " 강화 성공!");
         } else {
           if (currentLevel >= 60 && currentLevel < 70) {
             currentLevel -= 1;
+            updateResultMessage("강화 실패! 레벨이 하락했습니다.");
           } else if (
             currentLevel >= 70 &&
             currentLevel < 90 &&
@@ -294,6 +317,8 @@
               "src/brokenbranch.png"
             );
             currentLevel = 1;
+          } else {
+            updateResultMessage("강화 실패!");
           }
         }
 
@@ -329,14 +354,15 @@
           getBranchName(currentLevel);
         document.getElementById("branch-image").src =
           getBranchImage(currentLevel);
-        document.getElementById("result").textContent =
-          getBranchName(currentLevel) + " 단계에 도달했습니다.";
 
         if (currentLevel >= 99) {
-          document.getElementById("result").textContent =
-            "축하합니다! 세계수의 가지를 완성했습니다!";
+          updateResultMessage("축하합니다! 세계수의 가지를 완성했습니다!");
           gameCompleted = true;
         }
+      }
+
+      function updateResultMessage(message) {
+        document.getElementById("result").textContent = message;
       }
 
       function showModal(message, imageSrc) {

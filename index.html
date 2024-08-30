@@ -487,7 +487,7 @@
             let cost = calculateCost(currentLevel);
             totalCost += cost;
             document.getElementById("cost").textContent =
-              totalCost.toLocaleString(); // 콤마 추가
+              totalCost.toLocaleString();
 
             let random = Math.random();
             if (random < successRate) {
@@ -499,17 +499,19 @@
                 currentLevel -= 1;
                 updateResultMessage("강화 실패! 레벨이 하락했습니다.");
                 updateChikoImage("cry");
-              } else if (
-                currentLevel >= 70 &&
-                currentLevel < 90 &&
-                random < breakChance
-              ) {
-                showModal(
-                  "강화 실패! 나뭇가지가 파손되었습니다.",
-                  "src/brokenbranch.png"
-                );
-                currentLevel = 1;
-                updateChikoImage("fail");
+              } else if (currentLevel >= 70 && currentLevel < 90) {
+                if (random < breakChance) {
+                  showModal(
+                    "강화 실패! 나뭇가지가 파손되었습니다.",
+                    "src/brokenbranch.png"
+                  );
+                  currentLevel = 1;
+                  updateChikoImage("fail");
+                } else {
+                  currentLevel -= 1;
+                  updateResultMessage("강화 실패! 레벨이 하락했습니다.");
+                  updateChikoImage("cry");
+                }
               } else {
                 updateResultMessage("강화 실패!");
                 updateChikoImage("cry");

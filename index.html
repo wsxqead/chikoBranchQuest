@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -387,7 +387,7 @@
           gameCompleted = true;
           showModal(
             "축하합니다! 세계수의 가지를 완성했습니다!",
-            getBranchImage(currentLevel)
+            getBranchImage(currentLevel),
           );
           updateChikoImage("win");
           document.getElementById("btn-level-up").style.display = "none";
@@ -426,7 +426,7 @@
             ) {
               showModal(
                 "강화 실패! 나뭇가지가 파손되었습니다.",
-                "src/brokenbranch.png"
+                "src/brokenbranch.png",
               );
               currentLevel = 1;
               updateChikoImage("fail");
@@ -453,7 +453,7 @@
         if (currentLevel >= 90) {
           showModal(
             "90강 이후에는 10레벨씩 강화할 수 없습니다.",
-            getBranchImage(currentLevel)
+            getBranchImage(currentLevel),
           );
           return;
         }
@@ -491,7 +491,7 @@
 
             let random = Math.random();
             if (random < successRate) {
-              currentLevel += 1;
+              currentLevel += 10;
               updateResultMessage(getBranchName(currentLevel) + " 강화 성공!");
               updateChikoImage("success");
             } else {
@@ -503,7 +503,7 @@
                 if (random < breakChance) {
                   showModal(
                     "강화 실패! 나뭇가지가 파손되었습니다.",
-                    "src/brokenbranch.png"
+                    "src/brokenbranch.png",
                   );
                   currentLevel = 1;
                   updateChikoImage("fail");
@@ -586,13 +586,13 @@
         // 인트로 텍스트에 타자 효과 적용
         typeWriterEffect(
           "용사 리코와 함께 모험을 떠난 치코. 어느 날 마물과 싸우던 중 치코의 소중한 나뭇가지가 부러지고 말았습니다.",
-          "intro-text-1"
+          "intro-text-1",
         );
 
         setTimeout(() => {
           typeWriterEffect(
             "마을에 들러 나뭇가지를 고치던 중, 전설의 세계수 가지에 대한 이야기를 듣게 된 치코는 그 가지를 손에 넣기 위해 모험을 하기로 결심합니다!",
-            "intro-text-2"
+            "intro-text-2",
           );
         }, 4000); // 첫 번째 텍스트 효과가 끝난 후 두 번째 텍스트 효과 시작
       };
